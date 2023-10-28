@@ -10,7 +10,7 @@ def get_requirements(file_path: str) -> list[str]:
         requirements = [r.replace("\n","") for r in req]
     if HYPHEN_E_DOT in requirements:
         requirements.remove(HYPHEN_E_DOT)
-    return req
+    return requirements
 
 setup(
     name="StudentPerformancePrediction",
