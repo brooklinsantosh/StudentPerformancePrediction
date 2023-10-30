@@ -1,18 +1,34 @@
-from src.components.data_ingestion import DataIngestion, DataIngestionConfig
-from src.components.data_transformation import DataTransformation, DataTransformationConfig, DataTransformationResult
-from src.components.model_trainer import ModelTrainer, ModelTrainerConfig
+from flask import Flask, request, render_template
 
+from src.pipelines.predict_pipeline import CustomData,PredictPipeline
 
-data_ingestion_obj = DataIngestion()
-data_ingestion_obj.initiate_data_ingestion()
+app = Flask(__name__)
+app = app
 
-data_transformation_obj = DataTransformation()
-dt_result = data_transformation_obj.initiate_data_transformation(
-    DataIngestionConfig.train_data_path,
-    DataIngestionConfig.test_data_path
-)
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-model_trainer = ModelTrainer() 
-model_trainer.initiate_model_trainer(dt_result.train_arr, dt_result.test_arr)
-
-
+@app.route('/predictdata', methods=['GET', 'POST'])
+def predict_datapoint():
+    
+    if request.method == 'GET':
+        return render_template('home.html')
+    else:
+        data = CustomData(
+            gender= request.form.get('gender'),
+            race_ethnicity= request.form.get('race_ethnicity'),
+            parental_level_of_education= request.form.get('parental_level_of_education'),
+            lunch= request.form.get('lunch'),
+            test_preparation_course= request.form.get('test_preparation_course'),
+            reading_score= request.form.get('reading_score'),
+            writing_score= request.form.get('writing_score')
+        )
+        pred_obj = PredictPipeline(data)
+        df = pred_obj.get_data_as_dataframe()
+        print(df)
+        result = pred_obj.predict(df)
+        return render_template('home.html', result = result[0])
+    
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", debug=True)
